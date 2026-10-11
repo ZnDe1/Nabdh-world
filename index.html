@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<link rel="manifest" href="/manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#faf8f3">
+<meta name="apple-mobile-web-app-title" content="نبض العالم">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--paper:#faf8f3;--ink:#1a1a1a;--accent:#b91c1c;--gold:#d4a017;--muted:#6b7280;--border:#e5e0d5;--section-bg:#f5f2eb;--safe-bottom:env(safe-area-inset-bottom,0px)}
+body{font-family:'Noto Sans Arabic',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;overflow-x:hidden;-webkit-font-smoothing:antialiased;padding-bottom:calc(70px + var(--safe-bottom))}
+.status-spacer{height:env(safe-area-inset-top,20px);background:var(--paper)}
+.masthead{text-align:center;padding:.75rem 1rem .5rem;border-bottom:3px double var(--ink);position:relative}
+.masthead::after{content:'';display:block;width:100%;height:1px;background:var(--ink);margin-top:3px}
+.masthead-title{font-size:2.4rem;font-weight:900;letter-spacing:1px;color:var(--ink);line-height:1.3}
+.masthead-sub{display:flex;justify-content:space-between;align-items:center;padding:.4rem .25rem;font-size:.7rem;color:var(--muted);border-bottom:1px solid var(--border)}
+.masthead-edition{font-weight:700;color:var(--accent)}
+.live-clock{text-align:center;padding:.3rem;font-size:.8rem;color:var(--ink);font-weight:600;background:var(--section-bg);border-bottom:1px solid var(--border)}
+.live-clock .clock-time{font-size:1.1rem;font-weight:800;color:var(--ink)}
+.live-clock .clock-date{font-size:.7rem;color:var(--muted)}
+.ticker-wrap{background:var(--accent);color:#fff;overflow:hidden;position:relative;height:36px}
+.ticker-label{position:absolute;right:0;top:0;bottom:0;background:#7f1d1d;padding:0 .75rem;display:flex;align-items:center;gap:.4rem;font-size:.75rem;font-weight:700;z-index:2}
+.ticker-dot{width:6px;height:6px;background:#ffd200;border-radius:50%;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.ticker-track{display:flex;animation:scrollTicker 40s linear infinite;white-space:nowrap;padding-left:120px}
+.ticker-track span{padding:0 2rem;font-size:.8rem;font-weight:500}
+@keyframes scrollTicker{0%{transform:translateX(100%)}100%{transform:translateX(-200%)}}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--border);display:flex;z-index:1000;padding-bottom:var(--safe-bottom);box-shadow:0 -2px 10px rgba(0,0,0,.05)}
+.bnav-item{flex:1;padding:.6rem .3rem;border:none;background:transparent;font-family:'Noto Sans Arabic',sans-serif;font-size:.7rem;color:var(--muted);cursor:pointer;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:2px;position:relative}
+.bnav-item.active{color:var(--accent);font-weight:700}
+.bnav-icon{font-size:1.3rem}
+.bnav-badge{position:absolute;top:4px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:.55rem;font-weight:700;width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.panel{display:none}.panel.active{display:block;animation:fadeUp .3s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.featured{padding:1rem;border-bottom:1px solid var(--border)}
+.featured-img{width:100%;height:180px;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:3rem;margin-bottom:.75rem;position:relative;overflow:hidden}
+.featured-img::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(255,255,255,.03) 2px,rgba(255,255,255,.03) 4px)}
+.featured-label{display:inline-block;background:var(--accent);color:#fff;padding:.15rem .6rem;font-size:.65rem;font-weight:700;letter-spacing:1px;margin-bottom:.5rem}
+.featured h2{font-size:1.35rem;font-weight:800;line-height:1.6;margin-bottom:.5rem;color:var(--ink)}
+.featured p{font-size:.85rem;line-height:1.8;color:#374151}
+.featured-meta{margin-top:.5rem;font-size:.7rem;color:var(--muted);display:flex;gap:1rem}
+.article-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;padding:1rem}
+.article-card{background:#fff;border:1px solid var(--border);border-radius:2px;padding:.75rem;transition:box-shadow .2s}
+.article-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.article-card .card-tag{font-size:.6rem;font-weight:700;color:var(--accent);letter-spacing:1px;margin-bottom:.3rem}
+.article-card h3{font-size:.88rem;font-weight:700;line-height:1.6;margin-bottom:.3rem}
+.article-card p{font-size:.75rem;line-height:1.6;color:#4b5563}
+.article-card .meta{font-size:.65rem;color:var(--muted);margin-top:.3rem;padding-top:.3rem;border-top:1px solid var(--border)}
+.section-divider{text-align:center;padding:.6rem;position:relative}
+.section-divider::before,.section-divider::after{content:'';position:absolute;top:50%;width:calc(50% - 50px);height:1px;background:var(--border)}
+.section-divider::before{right:0}.section-divider::after{left:0}
+.section-divider span{font-size:1rem;font-weight:800;color:var(--ink);background:var(--paper);padding:0 .6rem;position:relative}
+.samsung-weather{background:linear-gradient(180deg,#1a3a5c 0%,#2d6aa0 40%,#4a9fd4 70%,#7ec8e3 100%);min-height:100vh;color:#fff}
+.sw-header{text-align:center;padding:1.25rem 1rem .5rem}
+.sw-city-name{font-size:1.1rem;font-weight:600;opacity:.9}
+.sw-location-detail{font-size:.7rem;opacity:.6;margin-top:.15rem}
+.sw-main-temp{text-align:center;padding:1rem 0 .5rem}
+.sw-temp-value{font-size:5rem;font-weight:200;letter-spacing:-3px;line-height:1}
+.sw-temp-unit{font-size:1.5rem;font-weight:300;vertical-align:super}
+.sw-condition{font-size:1rem;font-weight:500;opacity:.9;margin-top:.25rem}
+.sw-high-low{font-size:.85rem;opacity:.7;margin-top:.15rem}
+.sw-details-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem;padding:.75rem 1rem}
+.sw-detail-card{background:rgba(255,255,255,.12);backdrop-filter:blur(10px);border-radius:12px;padding:.75rem;text-align:center}
+.sw-detail-icon{font-size:1.3rem;margin-bottom:.2rem}
+.sw-detail-value{font-size:1.15rem;font-weight:700}
+.sw-detail-label{font-size:.65rem;opacity:.7;margin-top:.1rem}
+.sw-hourly-section{padding:.75rem 0 .5rem}
+.sw-section-title{font-size:.75rem;font-weight:600;opacity:.7;padding:0 1rem;margin-bottom:.5rem}
+.sw-hourly-scroll{display:flex;gap:.5rem;padding:0 1rem;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.sw-hourly-scroll::-webkit-scrollbar{display:none}
+.sw-hourly-item{min-width:52px;text-align:center;padding:.5rem .25rem;background:rgba(255,255,255,.1);border-radius:10px}
+.sw-hourly-item.now{background:rgba(255,255,255,.25)}
+.sw-hourly-time{font-size:.6rem;opacity:.7;margin-bottom:.3rem}
+.sw-hourly-icon{font-size:1.2rem;margin-bottom:.3rem}
+.sw-hourly-temp{font-size:.85rem;font-weight:700}
+.sw-daily-section{padding:.5rem 1rem 1rem}
+.sw-daily-list{display:flex;flex-direction:column;gap:.3rem}
+.sw-daily-item{display:flex;align-items:center;justify-content:space-between;padding:.6rem .75rem;background:rgba(255,255,255,.1);border-radius:10px}
+.sw-daily-day{font-size:.85rem;font-weight:600;min-width:60px}
+.sw-daily-icon{font-size:1.2rem}
+.sw-daily-temps{display:flex;gap:.75rem;align-items:center}
+.sw-daily-high{font-size:.9rem;font-weight:700}
+.sw-daily-low{font-size:.8rem;opacity:.6}
+.sw-daily-bar{width:50px;height:3px;background:rgba(255,255,255,.2);border-radius:2px;position:relative;overflow:hidden}
+.sw-daily-bar-fill{position:absolute;height:100%;background:linear-gradient(90deg,#60a5fa,#fbbf24);border-radius:2px}
+.sw-city-pills{display:flex;gap:.35rem;justify-content:center;padding:.6rem .75rem;flex-wrap:wrap;background:rgba(0,0,0,.15)}
+.sw-city-pill{padding:.3rem .8rem;border:1px solid rgba(255,255,255,.25);border-radius:20px;background:rgba(255,255,255,.08);font-family:'Noto Sans Arabic',sans-serif;font-size:.75rem;color:rgba(255,255,255,.8);cursor:pointer;transition:all .2s}
+.sw-city-pill.active{background:rgba(255,255,255,.3);color:#fff;border-color:rgba(255,255,255,.5);font-weight:600}
+.sw-refresh-info{text-align:center;padding:.4rem;font-size:.6rem;opacity:.5}
+.sw-loading{text-align:center;padding:3rem 1rem}
+.sw-loading-spinner{width:30px;height:30px;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto .75rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.world-timeline{padding:.75rem}
+.timeline-item{display:flex;gap:.6rem;padding-bottom:1rem;position:relative}
+.timeline-item:not(:last-child)::before{content:'';position:absolute;right:11px;top:28px;bottom:0;width:2px;background:var(--border)}
+.timeline-dot{width:22px;height:22px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:.65rem;color:#fff;flex-shrink:0;z-index:1}
+.timeline-dot.politics{background:#7c3aed}.timeline-dot.tech{background:#059669}.timeline-dot.conflict{background:#dc2626}.timeline-dot.global{background:#2563eb}
+.timeline-content{flex:1;background:#fff;border:1px solid var(--border);border-radius:4px;padding:.75rem}
+.timeline-content h3{font-size:.92rem;font-weight:700;line-height:1.6;margin-bottom:.25rem}
+.timeline-content p{font-size:.78rem;line-height:1.7;color:#4b5563}
+.timeline-content .t-date{font-size:.65rem;color:var(--muted);margin-top:.3rem}
+.live-feed{padding:.75rem}
+.feed-item{display:flex;gap:.6rem;padding:.75rem;background:#fff;border:1px solid var(--border);border-radius:4px;margin-bottom:.5rem;transition:background .2s}
+.feed-item.new{background:#fef3c7;border-color:var(--gold)}
+.feed-time{font-size:.65rem;color:var(--muted);min-width:45px;text-align:left;padding-top:2px}
+.feed-body h4{font-size:.85rem;font-weight:700;line-height:1.5;margin-bottom:.2rem}
+.feed-body p{font-size:.75rem;line-height:1.6;color:#4b5563}
+.feed-source{font-size:.6rem;color:var(--accent);font-weight:600;margin-top:.2rem}
+.refresh-indicator{text-align:center;padding:.5rem;font-size:.7rem;color:var(--muted);display:flex;align-items:center;justify-content:center;gap:.4rem}
+.refresh-spinner{width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+.pull-zone{height:40px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.75rem}
+.footer{text-align:center;padding:1.25rem 1rem;border-top:3px double var(--ink);margin-top:.75rem}
+.footer-logo{font-size:1.2rem;font-weight:900;margin-bottom:.25rem}
+.footer p{font-size:.7rem;color:var(--muted)}
+::-webkit-scrollbar{height:2px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+</style>
+</head>
+<body>
+<div class="status-spacer"></div>
+<header class="masthead">
+  <div class="masthead-title">نَبْضُ العالَم</div>
+  <div class="masthead-sub">
+    <span id="currentDate"></span>
+    <span class="masthead-edition">مباشر 🔴</span>
+    <span>الرياض، السعودية</span>
+  </div>
+</header>
+<div class="live-clock">
+  <div class="clock-time" id="liveClock">--:--:--</div>
+  <div class="clock-date" id="liveDate"></div>
+</div>
+<div class="ticker-wrap">
+  <div class="ticker-label"><span class="ticker-dot"></span> عاجل</div>
+  <div class="ticker-track">
+    <span>⚡ هجوم على مطار الملك خالد بالرياض — التحالف يوصفه بجريمة حرب كاملة</span>
+    <span>⚡ انطلاق عملية فجر اليمن لاستعادة مؤسسات الدولة</span>
+    <span>⚡ تصعيد عسكري في الشرق الأوسط — ضربات في بيروت وغزة</span>
+    <span>⚡ كلوديا شينباوم أول رئيسة لمكسيك</span>
+    <span>⚡ رئيس وزراء جديد لليابان بعد انتخابات برلمانية حاسمة</span>
+  </div>
+</div>
+<main id="mainContent">
+  <div id="news" class="panel active">
+    <div class="pull-zone" id="pullZone">↓ اسحب للتحديث</div>
+    <article class="featured">
+      <div class="featured-img">⚡</div>
+      <span class="featured-label">خبر عاجل</span>
+      <h2>هجوم الحوثي على مطار الملك خالد بالرياض يسفر عن سقوط ضحايا وإصابات بالغة</h2>
+      <p>أعلنت مصادر رسمية سعودية عن وقوع هجوم صاروخي على مطار الملك خالد الدولي في الرياض أسفر عن مقتل 12 شخصاُ وإصابة أكثر من 300 شخص. وصفت القيادة السعودية الهجوم بأنه "جريمة حرب كاملة" وتعهّدت برد حاسم ومباشر.</p>
+      <div class="featured-meta"><span>✍️ التحرير</span><span id="featuredTime">🕐 منذ ساعات</span></div>
+    </article>
+    <div class="refresh-indicator" id="refreshIndicator" style="display:none"><div class="refresh-spinner"></div><span>جارٍ تحديث الأخبار...</span></div>
+    <div class="section-divider"><span>آخر الأخبار المباشرة</span></div>
+    <div class="live-feed" id="liveFeed">
+      <div class="feed-item new"><div class="feed-time" id="feedTime1">--:--</div><div class="feed-body"><h4>انطلاق عملية "فجر اليمن"</h4><p>أعلن العليمي انطلاق العملية العسكرية بهدف استعادة مؤسسات الدولة وتحرير العاصمة صنعاء وإنهاء سيطرة الحوثيين.</p><div class="feed-source">وكالة الأنباء السعودية</div></div></div>
+      <div class="feed-item"><div class="feed-time" id="feedTime2">--:--</div><div class="feed-body"><h4>أمير الرياض يفتتح منتدى الرياض الاقتصادي</h4><p>المنتدى يستضيف نخبة من القادة الاقتصاديين لصياغة مستقبل الاستثمار والتنمية في المملكة.</p><div class="feed-source">عكاظ</div></div></div>
+      <div class="feed-item"><div class="feed-time" id="feedTime3">--:--</div><div class="feed-body"><h4>تشغيل قطارات إضافية القصيم → الرياض</h4><p>تشغيل قطارات إضافية يوم الأحد لتسهيل تنقل المسافرين بين المنطقتين.</p><div class="feed-source">سكك الحديدية</div></div></div>
+      <div class="feed-item"><div class="feed-time" id="feedTime4">--:--</div><div class="feed-body"><h4>رئيس تنفيذي جديد لحديقة الملك سلمان</h4><p>تعيين ديل تشادويك رئيساُ تنفيذياُ للمؤسسة ضمن توجه الإدارة الاحترافية.</p><div class="feed-source">عرب نيوز</div></div></div>
+    </div>
+    <div class="section-divider"><span>أخبار محلية</span></div>
+    <div class="article-grid">
+      <div class="article-card"><div class="card-tag">سياسة</div><h3>التحالف السعودي يعلن رد حاسم على هجوم المطار</h3><p>التحالف يوصف الهجوم بأنه جريمة حرب كاملة ويتعهد برد حاسم ومباشر.</p><div class="meta">منذ ساعة</div></div>
+      <div class="article-card"><div class="card-tag">اقتصاد</div><h3>السوق المالية السعودية ترتفع مع بداية التعاملات</h3><p>ارتفاع ملحوظ في أسهم القطاع المالي والطاقي مع بداية تعاملات اليوم.</p><div class="meta">منذ ساعتين</div></div>
+    </div>
+  </div>
+  <div id="weather" class="panel">
+    <div class="samsung-weather" id="samsungWeatherContainer">
+      <div class="sw-loading" id="swLoading"><div class="sw-loading-spinner"></div><p style="opacity:.7;font-size:.85rem;">جارٍ تحميل بيانات الطقس...</p></div>
+      <div id="swContent" style="display:none">
+        <div class="sw-header"><div class="sw-city-name" id="swCityName">--</div><div class="sw-location-detail" id="swLocationDetail">--</div></div>
+        <div class="sw-main-temp"><div><span class="sw-temp-value" id="swTempValue">--</span><span class="sw-temp-unit">°C</span></div><div class="sw-condition" id="swCondition">--</div><div class="sw-high-low" id="swHighLow">الأعلى: --° / الأدنى: --°</div></div>
+        <div class="sw-details-grid">
+          <div class="sw-detail-card"><div class="sw-detail-icon">💧</div><div class="sw-detail-value" id="swHumidity">--%</div><div class="sw-detail-label">الرطوبة</div></div>
+          <div class="sw-detail-card"><div class="sw-detail-icon">💨</div><div class="sw-detail-value" id="swWind">-- كم/س</div><div class="sw-detail-label">سرعة الرياح</div></div>
+          <div class="sw-detail-card"><div class="sw-detail-icon">🌡️</div><div class="sw-detail-value" id="swFeelsLike">--°م</div><div class="sw-detail-label">الإحساس الحراري</div></div>
+          <div class="sw-detail-card"><div class="sw-detail-icon">👁️</div><div class="sw-detail-value" id="swVisibility">-- كم</div><div class="sw-detail-label">مدى الرؤية</div></div>
+        </div>
+        <div class="sw-hourly-section"><div class="sw-section-title">التوقعات بالساعة</div><div class="sw-hourly-scroll" id="swHourlyScroll"></div></div>
+        <div class="sw-daily-section"><div class="sw-section-title">التوقعات الأسبوعية</div><div class="sw-daily-list" id="swDailyList"></div></div>
+        <div class="sw-refresh-info" id="swRefreshInfo">آخر تحديث: --:-- | التحديث القادم خلال ٩٠ ثانية</div>
+      </div>
+    </div>
+    <div class="sw-city-pills">
+      <button class="sw-city-pill active" onclick="switchSwCity('riyadh')">الرياض</button>
+      <button class="sw-city-pill" onclick="switchSwCity('jeddah')">جدة</button>
+      <button class="sw-city-pill" onclick="switchSwCity('dammam')">الدمام</button>
+      <button class="sw-city-pill" onclick="switchSwCity('makkah')">مكة المكرمة</button>
+      <button class="sw-city-pill" onclick="switchSwCity('medina')">المدينة</button>
+    </div>
+  </div>
+  <div id="world" class="panel">
+    <div class="section-divider"><span>أبرز الأحداث العالمية</span></div>
+    <div class="world-timeline">
+      <div class="timeline-item"><div class="timeline-dot conflict">⚔</div><div class="timeline-content"><h3>تصعيد عسكري شامل في الشرق الأوسط</h3><p>استمرار القتال المكثف في غزة مع عمليات إسرائيلية مستمرة. إيران أطلقت موجة صواريخ باليستية ضد إسرائيل. لبنان يشهد تصعيداُ مع ضربات في بيروت أسفرت عن عشرات القتلى.</p><div class="t-date">أكتوبر ٢٠٢٤</div></div></div>
+      <div class="timeline-item"><div class="timeline-dot politics">🏛</div><div class="timeline-content"><h3>كلوديا شينباوم أول رئيسة لمكسيك</h3><p>أدى كلوديا شينباوم اليمين كرئيسة لمكسيك لتكون أول امرأة تتولى رئاسة البلاد. بدأت فترة ولايتها حتى ٢٠٣٠ وسط توقعات بإصلاحات اجتماعية واقتصادية جذرية.</p><div class="t-date">أكتوبر ٢٠٢٤</div></div></div>
+      <div class="timeline-item"><div class="timeline-dot politics">🇯🇵</div><div class="timeline-content"><h3>رئيس وزراء جديد لليابان</h3><p>أصبح وزير الدفاع الياباني السابق رئيساُ جديداُ للوزراء بعد انتخابات برلمانية حاسمة. يتوقع أن يركز على تعزيز الأمن القومي والتعاون الاستراتيجي مع الحلفاء.</p><div class="t-date">أكتوبر ٢٠٢٤</div></div></div>
+      <div class="timeline-item"><div class="timeline-dot tech">🤖</div><div class="timeline-content"><h3>قفزة الذكاء الاصطناعي في ٢٠٢٤</h3><p>شهد العام تقدماُ كبيراُ في تقنيات الذكاء الاصطناعي بما في ذلك تحسين قدرات توليد الصور والنصوص والفيديوهات. شركات التكنولوجيا الكبرى تتسابق لإطلاق نماذج أكثر تطوراُ.</p><div class="t-date">أكتوبر ٢٠٢٤</div></div></div>
+      <div class="timeline-item"><div class="timeline-dot global">🇮🇶</div><div class="timeline-content"><h3>عمليات العراق ضد تنظيم داعش</h3><p>تواصل القوات العراقية عملياتها العسكرية ضد خلايا التنظيم في عدة مناطق مع تحقيق مكاسب ميدانية في القضاء على البنى التحتية للتنظيم.</p><div class="t-date">أكتوبر ٢٠٢٤</div></div></div>
+      <div class="timeline-item"><div class="timeline-dot global">🚢</div><div class="timeline-content"><h3>أزمة المهاجرين عبر ليبيا</h3><p>اعتراض مئات المهاجرين الذين يحاولون مغادرة ليبيا للوصول إلى أوروبا. المنظمة الدولية للهجرة تسجل ارتفاعاُ ملحوظاُ في محاولات العبور خلال أكتوبر.</p><div class="t-date">أكتوبر ٢٠٢٤</div></div></div>
+    </div>
+  </div>
+</main>
+<footer class="footer">
+  <div class="footer-logo">نَبْضُ العالَم</div>
+  <p>جميع الحقوق محفوظة © ٢٠٢٤</p>
+  <p style="margin-top:.2rem;" id="lastUpdate">آخر تحديث: --:--</p>
+</footer>
+<nav class="bottom-nav">
+  <button class="bnav-item active" onclick="switchTab('news')"><span class="bnav-icon">📰</span>أخبار<span class="bnav-badge" id="newsBadge">3</span></button>
+  <button class="bnav-item" onclick="switchTab('weather')"><span class="bnav-icon">🌤️</span>طقس</button>
+  <button class="bnav-item" onclick="switchTab('world')"><span class="bnav-icon">🌐</span>عالمي</button>
+</nav>
+<script>
+const OWM_API_KEY='e01e89a6ea51490c8888cf4324856613';
+const OWM_BASE='https://api.openweathermap.org/data/2.5';
+const cities={riyadh:{lat:24.7136,lon:46.6753,name:'الرياض',detail:'منطقة الرياض، المملكة العربية السعودية'},jeddah:{lat:21.5433,lon:39.1728,name:'جدة',detail:'منطقة مكة المكرمة، المملكة العربية السعودية'},dammam:{lat:26.4207,lon:50.0888,name:'الدمام',detail:'منطقة الشرقية، المملكة العربية السعودية'},makkah:{lat:21.3891,lon:39.8579,name:'مكة المكرمة',detail:'منطقة مكة المكرمة، المملكة العربية السعودية'},medina:{lat:24.5247,lon:39.5692,name:'المدينة المنورة',detail:'منطقة المدينة المنورة، المملكة العربية السعودية'}};
+let currentCityKey='riyadh';
+let weatherRefreshTimer=null;
+const owmWeatherMap={'clear sky':{icon:'☀️',desc:'صحو وواضح'},'few clouds':{icon:'🌤️',desc:'صحو Mostly clear'},'scattered clouds':{icon:'⛅',desc:'غائم جزئياُ'},'broken clouds':{icon:'☁️',desc:'غائم كلياُ'},'overcast clouds':{icon:'☁️',desc:'غائم كثيف'},'shower rain':{icon:'🌦️',desc:'زخات مطر خفيفة'},'rain':{icon:'🌧️',desc:'مطر'},'light rain':{icon:'🌧️',desc:'مطر خفيف'},'moderate rain':{icon:'🌧️',desc:'مطر متوسط'},'heavy intensity rain':{icon:'🌧️',desc:'مطر غزير'},'thunderstorm':{icon:'⛈️',desc:'عاصفة رعدية'},'thunderstorm with rain':{icon:'⛈️',desc:'عاصفة رعدية مع مطر'},'thunderstorm with heavy rain':{icon:'⛈️',desc:'عاصفة رعدية قوية'},'drizzle':{icon:'🌦️',desc:'رذاذ'},'light intensity drizzle':{icon:'🌦️',desc:'رذاذ خفيف'},'mist':{icon:'🌫️',desc:'ضباب خفيف'},'fog':{icon:'🌫️',desc:'ضباب'},'snow':{icon:'❄️',desc:'ثلج'},'light snow':{icon:'❄️',desc:'ثلج خفيف'},'haze':{icon:'🌫️',desc:'هباء'},'sand':{icon:'🌪️',desc:'رمال'},'dust':{icon:'🌪️',desc:'غبار'}};
+function getOwmWeatherInfo(d){return owmWeatherMap[d.toLowerCase()]||{icon:'🌡️',desc:d}}
+async function loadSamsungWeather(cityKey){
+  const city=cities[cityKey];if(!city)return;
+  const loadingEl=document.getElementById('swLoading');const contentEl=document.getElementById('swContent');
+  try{
+    const currentUrl=`${OWM_BASE}/weather?lat=${city.lat}&lon=${city.lon}&appid=${OWM_API_KEY}&units=metric&lang=ar`;
+    const forecastUrl=`${OWM_BASE}/forecast?lat=${city.lat}&lon=${city.lon}&appid=${OWM_API_KEY}&units=metric&lang=ar`;
+    const[currentRes,forecastRes]=await Promise.all([fetch(currentUrl),fetch(forecastUrl)]);
+    const current=await currentRes.json();const forecast=await forecastRes.json();
+    if(current.cod!==200)throw new Error('API error');
+    const info=getOwmWeatherInfo(current.weather[0].description);
+    document.getElementById('swCityName').textContent=city.name;
+    document.getElementById('swLocationDetail').textContent=city.detail;
+    document.getElementById('swTempValue').textContent=Math.round(current.main.temp);
+    document.getElementById('swCondition').textContent=`${info.icon} ${info.desc}`;
+    document.getElementById('swHighLow').textContent=`الأعلى: ${Math.round(current.main.temp_max)}° / الأدنى: ${Math.round(current.main.temp_min)}°`;
+    document.getElementById('swHumidity').textContent=`${current.main.humidity}%`;
+    document.getElementById('swWind').textContent=`${Math.round(current.wind.speed*3.6)} كم/س`;
+    document.getElementById('swFeelsLike').textContent=`${Math.round(current.main.feels_like)}°م`;
+    document.getElementById('swVisibility').textContent=`${(current.visibility/1000).toFixed(1)} كم`;
+    const hourlyScroll=document.getElementById('swHourlyScroll');hourlyScroll.innerHTML='';
+    const now=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Riyadh'}));
+    const currentHour=now.getHours();
+    for(let i=0;i<Math.min(8,forecast.list.length);i++){
+      const item=forecast.list[i];const dt=new Date(item.dt*1000);const hour=dt.getHours();
+      const hourLabel=(i===0&&hour>=currentHour-1&&hour<=currentHour+1)?'الآن':`${hour}:00`;
+      const fInfo=getOwmWeatherInfo(item.weather[0].description);
+      const div=document.createElement('div');div.className=`sw-hourly-item${i===0?' now':''}`;
+      div.innerHTML=`<div class="sw-hourly-time">${hourLabel}</div><div class="sw-hourly-icon">${fInfo.icon}</div><div class="sw-hourly-temp">${Math.round(item.main.temp)}°</div>`;
+      hourlyScroll.appendChild(div);
+    }
+    const dailyList=document.getElementById('swDailyList');dailyList.innerHTML='';
+    const dailyData={};
+    forecast.list.forEach(item=>{const date=new Date(item.dt*1000);const dayKey=date.toISOString().split('T')[0];if(!dailyData[dayKey])dailyData[dayKey]={temps:[],descs:[]};dailyData[dayKey].temps.push(item.main.temp);dailyData[dayKey].descs.push(item.weather[0].description)});
+    const arabicDays=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+    const today=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Riyadh'})).toISOString().split('T')[0];
+    const allMax=Object.values(dailyData).map(d=>Math.max(...d.temps));
+    const allMin=Object.values(dailyData).map(d=>Math.min(...d.temps));
+    const globalMax=Math.max(...allMax);const globalMin=Math.min(...allMin);const range=globalMax-globalMin||1;
+    let dayCount=0;
+    for(const[dateKey,data]of Object.entries(dailyData)){
+      if(dayCount>=7)break;const date=new Date(dateKey+'T00:00:00');
+      const dayName=dateKey===today?'اليوم':arabicDays[date.getDay()];
+      const high=Math.round(Math.max(...data.temps));const low=Math.round(Math.min(...data.temps));
+      const descCounts={};data.descs.forEach(d=>descCounts[d]=(descCounts[d]||0)+1);
+      const mostCommonDesc=Object.entries(descCounts).sort((a,b)=>b[1]-a[1])[0][0];
+      const dInfo=getOwmWeatherInfo(mostCommonDesc);
+      const rightPct=((low-globalMin)/range)*100;const widthPct=((high-low)/range)*100;
+      const item=document.createElement('div');item.className='sw-daily-item';
+      item.innerHTML=`<div class="sw-daily-day">${dayName}</div><div class="sw-daily-icon">${dInfo.icon}</div><div class="sw-daily-temps"><span class="sw-daily-low">${low}°</span><div class="sw-daily-bar"><div class="sw-daily-bar-fill" style="right:${rightPct}%;width:${widthPct}%"></div></div><span class="sw-daily-high">${high}°</span></div>`;
+      dailyList.appendChild(item);dayCount++;
+    }
+    loadingEl.style.display='none';contentEl.style.display='block';
+    const updateTime=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Riyadh'}));
+    document.getElementById('swRefreshInfo').textContent=`آخر تحديث: ${formatTime(updateTime)} | التحديث القادم خلال ٩٠ ثانية`;
+  }catch(error){console.error(`Error fetching weather for ${cityKey}:`,error);loadingEl.style.display='none';contentEl.style.display='block';document.getElementById('swCondition').textContent='تعذر تحميل البيانات — تحقق من الاتصال'}
+}
+function switchSwCity(cityKey){currentCityKey=cityKey;document.querySelectorAll('.sw-city-pill').forEach(b=>b.classList.remove('active'));event.currentTarget.classList.add('active');loadSamsungWeather(cityKey)}
+loadSamsungWeather('riyadh');
+weatherRefreshTimer=setInterval(()=>{loadSamsungWeather(currentCityKey)},90000);
+function updateClock(){
+  const now=new Date();const saudiTime=new Date(now.toLocaleString('en-US',{timeZone:'Asia/Riyadh'}));
+  const hours=saudiTime.getHours().toString().padStart(2,'0');
+  const minutes=saudiTime.getMinutes().toString().padStart(2,'0');
+  const seconds=saudiTime.getSeconds().toString().padStart(2,'0');
+  document.getElementById('liveClock').textContent=`${hours}:${minutes}:${seconds}`;
+  const options={weekday:'long',year:'numeric',month:'long',day:'numeric',timeZone:'Asia/Riyadh'};
+  document.getElementById('liveDate').textContent=saudiTime.toLocaleDateString('ar-SA',options);
+  document.getElementById('currentDate').textContent=saudiTime.toLocaleDateString('ar-SA',options);
+}
+updateClock();setInterval(updateClock,1000);
+function formatTime(date){return date.toLocaleTimeString('ar-SA',{hour:'2-digit',minute:'2-digit',hour12:true})}
+const now=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Riyadh'}));
+const feedTimes=[new Date(now.getTime()-30*60000),new Date(now.getTime()-90*60000),new Date(now.getTime()-150*60000),new Date(now.getTime()-210*60000)];
+document.getElementById('feedTime1').textContent=formatTime(feedTimes[0]);
+document.getElementById('feedTime2').textContent=formatTime(feedTimes[1]);
+document.getElementById('feedTime3').textContent=formatTime(feedTimes[2]);
+document.getElementById('feedTime4').textContent=formatTime(feedTimes[3]);
+document.getElementById('lastUpdate').textContent=`آخر تحديث: ${formatTime(now)}`;
+function switchTab(tabId){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.bnav-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById(tabId).classList.add('active');
+  event.currentTarget.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(tabId==='weather')loadSamsungWeather(currentCityKey);
+}
+const breakingNews=[
+  {title:'تحديث: التحالف السعودي يعلن تفاصيل الرد العسكري',desc:'التحالف يعلن عن خطة عسكرية شاملة للرد على هجوم مطار الملك خالد.',source:'واس'},
+  {title:'أسواق عالمية: ارتفاع أسعار النفط بعد أحداث الشرق الأوسط',desc:'ارتفعت أسعار النفط بنسبة ٣٪ في التعاملات الآسيوية.',source:'رويترز'},
+  {title:'عملية فجر اليمن: تقدم القوات باتجاه مواقع الحوثيين',desc:'القوات تعلن السيطرة على عدة مواقع استراتيجية.',source:'العربية'},
+  {title:'مصرع ١٢ في هجوم مطار الرياض — تفاصيل جديدة',desc:'مصادر طبية تؤكد عدد الضحايا والإصابات في الهجوم.',source:'عكاظ'},
+  {title:'الأمم المتحدة تدعو لوقف فوري للتصعيد في المنطقة',desc:'الأمين العام يدعو جميع الأطراف للعودة إلى طاولة المفاوضات.',source:'بي بي سي عربي'},
+];
+let newsIndex=0;let badgeCount=3;
+function addLiveNews(){
+  if(newsIndex>=breakingNews.length)return;
+  const item=breakingNews[newsIndex];const feed=document.getElementById('liveFeed');
+  const div=document.createElement('div');div.className='feed-item new';
+  const currentTime=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Riyadh'}));
+  div.innerHTML=`<div class="feed-time">${formatTime(currentTime)}</div><div class="feed-body"><h4>${item.title}</h4><p>${item.desc}</p><div class="feed-source">${item.source}</div></div>`;
+  feed.insertBefore(div,feed.firstChild);setTimeout(()=>div.classList.remove('new'),3000);
+  badgeCount++;document.getElementById('newsBadge').textContent=badgeCount;newsIndex++;
+  const updateTime=new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Riyadh'}));
+  document.getElementById('lastUpdate').textContent=`آخر تحديث: ${formatTime(updateTime)}`;
+}
+setInterval(addLiveNews,15000);
+let startY=0;let pulling=false;const pullZone=document.getElementById('pullZone');
+document.addEventListener('touchstart',(e)=>{if(window.scrollY===0&&document.getElementById('news').classList.contains('active')){startY=e.touches[0].clientY;pulling=true}});
+document.addEventListener('touchmove',(e)=>{if(!pulling)return;const diff=e.touches[0].clientY-startY;if(diff>60){pullZone.textContent='↻ جارٍ التحديث...';pullZone.style.color='#b91c1c'}});
+document.addEventListener('touchend',()=>{if(pulling&&pullZone.textContent.includes('التحديث'))pullToRefresh();pulling=false;pullZone.textContent='↓ اسحب للتحديث';pullZone.style.color=''});
+function pullToRefresh(){const indicator=document.getElementById('refreshIndicator');indicator.style.display='flex';setTimeout(()=>{indicator.style.display='none';addLiveNews();addLiveNews()},1500)}
+if('Notification'in window&&Notification.permission==='default'){Notification.requestPermission()}
+if('serviceWorker'in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/sw.js').then(registration=>{
+      console.log('✅ Service Worker registered:',registration.scope);
+      registration.addEventListener('updatefound',()=>{
+        const newWorker=registration.installing;
+        newWorker.addEventListener('statechange',()=>{
+          if(newWorker.state==='installed'&&navigator.serviceWorker.controller){
+            if(confirm('🔄 هناك تحديث جديد! هل تريد إعادة تحميل التطبيق؟'))window.location.reload();
+          }
+        });
+      });
+    }).catch(error=>{console.log('❌ Service Worker registration failed:',error)});
+  });
+  navigator.serviceWorker.addEventListener('message',(event)=>{
+    if(event.data.type==='WEATHER_REFRESH')loadSamsungWeather(currentCityKey);
+  });
+}
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt',(e)=>{
+  e.preventDefault();deferredPrompt=e;
+  const footer=document.querySelector('.footer');
+  const installBtn=document.createElement('div');
+  installBtn.style.cssText='margin-top:.75rem;padding:.6rem;background:#b91c1c;color:#fff;border-radius:20px;display:inline-block;font-size:.8rem;font-weight:700;cursor:pointer;';
+  installBtn.textContent='📱 تثبيت التطبيق على الشاشة الرئيسية';
+  installBtn.onclick=async()=>{
+    deferredPrompt.prompt();const result=await deferredPrompt.userChoice;
+    if(result.outcome==='accepted'){installBtn.textContent='✅ تم التثبيت بنجاح!';setTimeout(()=>installBtn.remove(),3000)}
+    deferredPrompt=null;
+  };
+  footer.appendChild(installBtn);
+});
+</script>
+</body>
+</html>
